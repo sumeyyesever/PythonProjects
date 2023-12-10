@@ -1,3 +1,4 @@
+import json
 from tkinter import *
 from tkinter import messagebox
 import random
@@ -34,15 +35,59 @@ def save():
     email_name = mail_input.get()
     password_name = password_input.get()
 
+    new_data = {
+        web_name: {
+            "email": email_name,
+            "password": password_name
+        }
+    }
+
     if web_name == "" or password_name == "":
         messagebox.showinfo("Oops", "Please do not leave empty fields.")
     else:
-        data_string = f"{web_name} - {email_name} - {password_name}"
-        with open("data.txt", mode="a") as file:
-            file.write(f"{data_string}\n")
-        web_input.delete(0, "end")
+        try:
+            with open("data.json", "r") as data_file:
+                data = json.load(data_file)  # reading old data. after this line can be putting in else part
+                data.update(new_data)  # updating old data with new data
+            with open("data.json", "w") as data_file:
+                json.dump(data, data_file, indent=4)
+        except FileNotFoundError:
+            with open("data.json", "w") as data_file:
+                json.dump(new_data, data_file, indent=4)
+
+        web_input.delete(0, "end")  # this three lines can be put in finally
         password_input.delete(0, "end")
         web_input.focus()
+
+
+# -----------------------------FIND PASSWORD -----------------------------#
+
+def find():
+    web_name = web_input.get()
+
+    try:
+        with open("data.json", "r") as data_file:
+            data = json.load(data_file)
+    except FileNotFoundError:
+        messagebox.showinfo("Oops", "File you trying to reach does not exist.")
+    else:
+        if web_name in data:
+            mail = data[web_name]["email"]
+            password = data[web_name]["password"]
+            messagebox.showinfo(f"{web_name}", f"E-Mail: {mail}\nPassword: {password}")
+        else:
+            messagebox.showinfo(f"{web_name}", "This website does not exist in the file")
+
+        # try:
+        #    mail_pass = data[web_name]
+        # except KeyError:
+        #     messagebox.showinfo(f"{web_name}", "This website does not exist in the file")
+        # else:
+        #     messagebox.showinfo(f"{web_name}", f"Password: {mail_pass["password"]}")
+# if you can do something with if and else very easily, then you should stick to if and else.
+# If you can't do it with if and else very easily, and it's actually an error that's going to be thrown
+# that you don't have any other way of dealing with,then you should be using the try, except, else, finally, keywords.
+
 
 # ---------------------------- UI SETUP ------------------------------- #
 
@@ -60,8 +105,11 @@ web_label = Label(text="Website: ")
 web_label.grid(row=1, column=0)
 web_label.focus()
 
-web_input = Entry(width=50)
-web_input.grid(row=1, column=1, columnspan=2)
+web_input = Entry(width=32)
+web_input.grid(row=1, column=1)
+
+search_button = Button(text="Search", width=13, command=find)
+search_button.grid(row=1, column=2)
 
 mail_label = Label(text="Email/Username: ")
 mail_label.grid(row=2, column=0)

@@ -5,7 +5,7 @@ import smtplib
 
 
 my_email = "python.sumeyye@gmail.com"
-password = "lfipsjsezfaikjqm"
+password = ""
 
 data = pandas.read_csv("birthdays.csv")
 
